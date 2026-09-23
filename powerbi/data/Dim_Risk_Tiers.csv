@@ -1,0 +1,4 @@
+RiskTierKey,RiskTier,ProbabilityThreshold,SortOrder,ColorHex,RecommendedAction
+1,High Risk,>= 65%,1,#EF4444,Immediate VIP Relationship Manager Outreach & Wealth Advisory Consultation
+2,Medium Risk,35% - 65%,2,#F59E0B,Targeted Digital Product Consolidation & Fee Rebate Incentives
+3,Low Risk,< 35%,3,#10B981,Standard Relationship Care & Cross-sell

@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power BI Enterprise Dashboard - Banking Customer Churn Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pbi-yellow: #f2c811;
+            --pbi-bg-app: #12161f;
+            --pbi-bg-canvas: #1b2234;
+            --pbi-card: #222b42;
+            --pbi-card-hover: #2a3552;
+            --pbi-border: rgba(255, 255, 255, 0.08);
+            --pbi-text: #f8fafc;
+            --pbi-text-muted: #94a3b8;
+            --pbi-blue: #3b82f6;
+            --pbi-cyan: #06b6d4;
+            --pbi-emerald: #10b981;
+            --pbi-amber: #f59e0b;
+            --pbi-red: #ef4444;
+            --font-pbi: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--pbi-bg-app);
+            color: var(--pbi-text);
+            font-family: var(--font-pbi);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Power BI Header Ribbon */
+        .pbi-topbar {
+            height: 48px;
+            background: #181f2f;
+            border-bottom: 1px solid var(--pbi-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 100;
+        }
+
+        .pbi-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pbi-logo {
+            width: 22px;
+            height: 22px;
+            background: var(--pbi-yellow);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        .pbi-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+
+        .pbi-badge {
+            background: rgba(242, 200, 17, 0.15);
+            color: var(--pbi-yellow);
+            border: 1px solid rgba(242, 200, 17, 0.3);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .pbi-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-pbi {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--pbi-border);
+            color: var(--pbi-text);
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.15s ease;
+        }
+
+        .btn-pbi:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        /* Main Workspace Layout */
+        .pbi-workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Left Navigation (Pages) */
+        .pbi-nav {
+            width: 220px;
+            background: #161c2b;
+            border-right: 1px solid var(--pbi-border);
+            display: flex;
+            flex-direction: column;
+            padding: 12px 0;
+            gap: 4px;
+        }
+
+        .nav-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--pbi-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 6px 16px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            color: var(--pbi-text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.15s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: #fff;
+        }
+
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.12);
+            color: #fff;
+            border-left-color: var(--pbi-yellow);
+        }
+
+        .nav-item svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        /* Canvas Area */
+        .pbi-canvas {
+            flex: 1;
+            background: var(--pbi-bg-canvas);
+            overflow-y: auto;
+            padding: 18px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        /* Slicer Bar */
+        .slicer-bar {
+            background: var(--pbi-card);
+            border: 1px solid var(--pbi-border);
+            border-radius: 8px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .slicer-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .slicer-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--pbi-text-muted);
+            text-transform: uppercase;
+        }
+
+        select.pbi-select {
+            background: #161d2d;
+            border: 1px solid var(--pbi-border);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+        }
+
+        select.pbi-select:focus {
+            border-color: var(--pbi-yellow);
+        }
+
+        /* KPI Cards Strip */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 14px;
+        }
+
+        .pbi-kpi-card {
+            background: var(--pbi-card);
+            border: 1px solid var(--pbi-border);
+            border-radius: 8px;
+            padding: 16px 18px;
+            position: relative;
+            overflow: hidden;
+            border-top: 3px solid var(--pbi-yellow);
+        }
+
+        .pbi-kpi-card.blue { border-top-color: var(--pbi-blue); }
+        .pbi-kpi-card.red { border-top-color: var(--pbi-red); }
+        .pbi-kpi-card.green { border-top-color: var(--pbi-emerald); }
+        .pbi-kpi-card.amber { border-top-color: var(--pbi-amber); }
+
+        .kpi-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--pbi-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .kpi-number {
+            font-size: 1.85rem;
+            font-weight: 800;
+            margin: 4px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .kpi-desc {
+            font-size: 0.78rem;
+            color: var(--pbi-text-muted);
+        }
+
+        /* Grid Visuals */
+        .visual-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .visual-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+
+        .pbi-visual {
+            background: var(--pbi-card);
+            border: 1px solid var(--pbi-border);
+            border-radius: 8px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .visual-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .visual-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* Bar Visual Simulation */
+        .bar-chart-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chart-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .chart-row-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .chart-track {
+            height: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chart-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        .fill-blue { background: linear-gradient(90deg, #2563eb, #3b82f6); }
+        .fill-red { background: linear-gradient(90deg, #dc2626, #ef4444); }
+        .fill-amber { background: linear-gradient(90deg, #d97706, #f59e0b); }
+        .fill-green { background: linear-gradient(90deg, #059669, #10b981); }
+
+        /* Sliders */
+        .simulator-box {
+            background: #171f30;
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .range-slider {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .slider-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--pbi-yellow);
+            cursor: pointer;
+        }
+
+        /* DAX Viewer Table */
+        .dax-card {
+            background: #151b2a;
+            border: 1px solid var(--pbi-border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .dax-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .dax-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--pbi-yellow);
+        }
+
+        pre.dax-code {
+            background: #0f1420;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            color: #38bdf8;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        /* Views */
+        .view-content {
+            display: none;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .view-content.active {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Power BI Header -->
+    <header class="pbi-topbar">
+        <div class="pbi-brand">
+            <div class="pbi-logo">Pb</div>
+            <div class="pbi-title">Power BI Enterprise • Retail Banking Customer Churn & Retention Model</div>
+            <span class="pbi-badge">Star Schema v1.0</span>
+        </div>
+        <div class="pbi-actions">
+            <button class="btn-pbi" onclick="resetFilters()">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+                Reset Slicers
+            </button>
+            <button class="btn-pbi" style="background: var(--pbi-yellow); color: #000; font-weight: 700;" onclick="window.print()">
+                Export PDF
+            </button>
+        </div>
+    </header>
+
+    <!-- Workspace Container -->
+    <div class="pbi-workspace">
+
+        <!-- Navigation Tabs -->
+        <nav class="pbi-nav">
+            <div class="nav-label">Report Pages</div>
+            <div class="nav-item active" onclick="switchPage('page-overview', this)">
+                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/></svg>
+                1. Executive Overview
+            </div>
+            <div class="nav-item" onclick="switchPage('page-demographics', this)">
+                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/><path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>
+                2. Demographics & Products
+            </div>
+            <div class="nav-item" onclick="switchPage('page-simulator', this)">
+                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M2.5 1A1.5 1.5 0 0 0 1 2.5v11A1.5 1.5 0 0 0 2.5 15h6.086a1.5 1.5 0 0 0 1.06-.44l4.915-4.914A1.5 1.5 0 0 0 15 8.586V2.5A1.5 1.5 0 0 0 13.5 1h-11zM2 2.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5V8H9.5A1.5 1.5 0 0 0 8 9.5V14H2.5a.5.5 0 0 1-.5-.5v-11zm7 11.293V9.5a.5.5 0 0 1 .5-.5h4.293L9 13.793z"/></svg>
+                3. Retention ROI Simulator
+            </div>
+            <div class="nav-item" onclick="switchPage('page-dax', this)">
+                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/><path d="M4 4h8v2H4V4zm0 3h8v2H4V7zm0 3h5v2H4v-2z"/></svg>
+                4. DAX Measure Library
+            </div>
+        </nav>
+
+        <!-- Canvas -->
+        <main class="pbi-canvas">
+
+            <!-- Global Slicers -->
+            <div class="slicer-bar">
+                <div class="slicer-group">
+                    <span class="slicer-label">Geography:</span>
+                    <select id="slicer-geo" class="pbi-select" onchange="updateDashboard()">
+                        <option value="ALL">All Countries (10,000)</option>
+                        <option value="France">France (5,000)</option>
+                        <option value="Germany">Germany (2,500)</option>
+                        <option value="Spain">Spain (2,500)</option>
+                    </select>
+                </div>
+                <div class="slicer-group">
+                    <span class="slicer-label">Risk Tier:</span>
+                    <select id="slicer-risk" class="pbi-select" onchange="updateDashboard()">
+                        <option value="ALL">All Risk Tiers</option>
+                        <option value="High Risk">High Risk (Prob ≥ 65%)</option>
+                        <option value="Medium Risk">Medium Risk (35-65%)</option>
+                        <option value="Low Risk">Low Risk (Prob < 35%)</option>
+                    </select>
+                </div>
+                <div class="slicer-group">
+                    <span class="slicer-label">Gender:</span>
+                    <select id="slicer-gender" class="pbi-select" onchange="updateDashboard()">
+                        <option value="ALL">All Genders</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+                <div class="slicer-group">
+                    <span class="slicer-label">Age Group:</span>
+                    <select id="slicer-age" class="pbi-select" onchange="updateDashboard()">
+                        <option value="ALL">All Age Groups</option>
+                        <option value="Under30">Under 30 (Gen Z)</option>
+                        <option value="Age30_45">Age 30 - 45 (Millennial)</option>
+                        <option value="Age46_60">Age 46 - 60 (Gen X)</option>
+                        <option value="Over60">Over 60 (Senior)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- PAGE 1: EXECUTIVE OVERVIEW -->
+            <div id="page-overview" class="view-content active">
+                <!-- KPI Multi-Row Cards -->
+                <div class="kpi-row">
+                    <div class="pbi-kpi-card blue">
+                        <div class="kpi-title">Total Customers</div>
+                        <div class="kpi-number" id="kpi-customers">10,000</div>
+                        <div class="kpi-desc">Audited active records</div>
+                    </div>
+                    <div class="pbi-kpi-card red">
+                        <div class="kpi-title">Portfolio Churn Rate</div>
+                        <div class="kpi-number" id="kpi-churn-rate" style="color: var(--pbi-red);">20.4%</div>
+                        <div class="kpi-desc" id="kpi-churn-count">2,037 Attrited Accounts</div>
+                    </div>
+                    <div class="pbi-kpi-card amber">
+                        <div class="kpi-title">Total Deposits ($)</div>
+                        <div class="kpi-number" id="kpi-balance">$764.9M</div>
+                        <div class="kpi-desc" id="kpi-avg-balance">Avg $76,486 / customer</div>
+                    </div>
+                    <div class="pbi-kpi-card red">
+                        <div class="kpi-title">Annual Value at Risk</div>
+                        <div class="kpi-number" id="kpi-var" style="color: #fb7171;">$3.88M</div>
+                        <div class="kpi-desc">Expected NIM + Fee Loss</div>
+                    </div>
+                    <div class="pbi-kpi-card green">
+                        <div class="kpi-title">Active Member %</div>
+                        <div class="kpi-number" id="kpi-active" style="color: var(--pbi-emerald);">51.5%</div>
+                        <div class="kpi-desc">Engagement baseline</div>
+                    </div>
+                </div>
+
+                <!-- 2 Visual Columns -->
+                <div class="visual-grid-2">
+                    <div class="pbi-visual">
+                        <div class="visual-header">
+                            <span class="visual-title">Country-Level Churn Rate Breakdown</span>
+                            <span class="pbi-badge">Dim_Geography</span>
+                        </div>
+                        <div class="bar-chart-container">
+                            <div class="chart-row">
+                                <div class="chart-row-meta">
+                                    <span>Germany (2x Attrition)</span>
+                                    <span id="val-geo-germany">32.4%</span>
+                                </div>
+                                <div class="chart-track">
+                                    <div class="chart-fill fill-red" id="bar-geo-germany" style="width: 65%;"></div>
+                                </div>
+                            </div>
+                            <div class="chart-row">
+                                <div class="chart-row-meta">
+                                    <span>Spain</span>
+                                    <span id="val-geo-spain">16.6%</span>
+                                </div>
+                                <div class="chart-track">
+                                    <div class="chart-fill fill-blue" id="bar-geo-spain" style="width: 33%;"></div>
+                                </div>
+                            </div>
+                            <div class="chart-row">
+                                <div class="chart-row-meta">
+                                    <span>France</span>
+                                    <span id="val-geo-france">16.1%</span>
+                                </div>
+                                <div class="chart-track">
+                                    <div class="chart-fill fill-blue" id="bar-geo-france" style="width: 32%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pbi-visual">
+                        <div class="visual-header">
+                            <span class="visual-title">Customer Defection by Product Count</span>
+                            <span class="pbi-badge">Dim_Products</span>
+                        </div>
+                        <div class="bar-chart-container">
+                            <div class="chart-row">
+                                <div class="chart-row-meta">
+                                    <span>1 Product (Single Account)</span>
+                                    <span>27.7% Churn</span>
+                                </div>
+                                <div class="chart-track"><div class="chart-fill fill-amber" style="width: 28%;"></div></div>
+                            </div>
+                            <div class="chart-row">
+                                <div class="chart-row-meta">
+                                    <span>2 Products (Optimal Loyalty)</span>
+                                    <span style="color: var(--pbi-emerald);">7.6% Churn</span>
+                                </div>
+                                <div class="chart-track"><div class="chart-fill fill-green" style="width: 8%;"></div></div>
+                            </div>
+                            <div class="chart-row">
+                                <div class="chart-row-meta">
+                                    <span>3 Products (Fragmented)</span>
+                                    <span style="color: var(--pbi-red);">82.7% Churn</span>
+                                </div>
+                                <div class="chart-track"><div class="chart-fill fill-red" style="width: 83%;"></div></div>
+                            </div>
+                            <div class="chart-row">
+                                <div class="chart-row-meta">
+                                    <span>4 Products (Severe Friction)</span>
+                                    <span style="color: var(--pbi-red);">100% Churn</span>
+                                </div>
+                                <div class="chart-track"><div class="chart-fill fill-red" style="width: 100%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 2: DEMOGRAPHICS -->
+            <div id="page-demographics" class="view-content">
+                <div class="visual-grid-2">
+                    <div class="pbi-visual">
+                        <div class="visual-header">
+                            <span class="visual-title">Generational Cohort Churn Exposure</span>
+                            <span class="pbi-badge">Dim_Demographics</span>
+                        </div>
+                        <div class="bar-chart-container">
+                            <div class="chart-row">
+                                <div class="chart-row-meta">
+                                    <span>Age 46 - 60 (Gen X / Peak Balances)</span>
+                                    <span style="color: var(--pbi-red);">48.2% Churn</span>
+                                </div>
+                                <div class="chart-track"><div class="chart-fill fill-red" style="width: 48%;"></div></div>
+                            </div>
+                            <div class="chart-row">
+                                <div class="chart-row-meta">
+                                    <span>Over 60 (Senior / Boomer)</span>
+                                    <span style="color: var(--pbi-amber);">24.6% Churn</span>
+                                </div>
+                                <div class="chart-track"><div class="chart-fill fill-amber" style="width: 25%;"></div></div>
+                            </div>
+                            <div class="chart-row">
+                                <div class="chart-row-meta">
+                                    <span>Age 30 - 45 (Millennial / Working)</span>
+                                    <span>12.5% Churn</span>
+                                </div>
+                                <div class="chart-track"><div class="chart-fill fill-blue" style="width: 13%;"></div></div>
+                            </div>
+                            <div class="chart-row">
+                                <div class="chart-row-meta">
+                                    <span>Under 30 (Gen Z / Young Adult)</span>
+                                    <span>7.2% Churn</span>
+                                </div>
+                                <div class="chart-track"><div class="chart-fill fill-green" style="width: 7%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pbi-visual">
+                        <div class="visual-header">
+                            <span class="visual-title">Customer Service Complaint Impact</span>
+                            <span class="pbi-badge">Fact_Customer_Churn</span>
+                        </div>
+                        <div class="bar-chart-container">
+                            <div class="chart-row">
+                                <div class="chart-row-meta">
+                                    <span>Filed Customer Complaint (1)</span>
+                                    <span style="color: var(--pbi-red);">58.9% Churn Rate</span>
+                                </div>
+                                <div class="chart-track"><div class="chart-fill fill-red" style="width: 59%;"></div></div>
+                            </div>
+                            <div class="chart-row">
+                                <div class="chart-row-meta">
+                                    <span>No Formal Complaint (0)</span>
+                                    <span style="color: var(--pbi-emerald);">14.2% Churn Rate</span>
+                                </div>
+                                <div class="chart-track"><div class="chart-fill fill-green" style="width: 14%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 3: WHAT-IF SIMULATOR -->
+            <div id="page-simulator" class="view-content">
+                <div class="visual-grid-2">
+                    <div class="simulator-box">
+                        <h3 style="font-size: 1.1rem; color: var(--pbi-yellow);">What-If Retention Parameters</h3>
+                        <div class="range-slider">
+                            <div class="slider-meta">
+                                <span>Intervention Cost per Customer:</span>
+                                <span id="cost-val" style="color: var(--pbi-yellow);">$120</span>
+                            </div>
+                            <input type="range" id="param-cost" min="50" max="300" step="10" value="120" oninput="updateSimulator()">
+                        </div>
+                        <div class="range-slider">
+                            <div class="slider-meta">
+                                <span>Proactive Campaign Save Rate (%):</span>
+                                <span id="save-rate-val" style="color: var(--pbi-yellow);">28%</span>
+                            </div>
+                            <input type="range" id="param-save-rate" min="10" max="60" step="2" value="28" oninput="updateSimulator()">
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--pbi-text-muted);">
+                            Targeting High Risk (≥65%) and Medium Risk (35-65%) customer segments (2,600 accounts).
+                        </p>
+                    </div>
+
+                    <div class="pbi-visual">
+                        <div class="visual-header">
+                            <span class="visual-title">Simulated Financial Payoff & ROI</span>
+                            <span class="pbi-badge">DAX What-If</span>
+                        </div>
+                        <div class="kpi-row" style="grid-template-columns: 1fr 1fr;">
+                            <div class="pbi-kpi-card green">
+                                <div class="kpi-title">Net Financial Benefit</div>
+                                <div class="kpi-number" id="sim-net-gain" style="color: var(--pbi-emerald);">+$840.6K</div>
+                                <div class="kpi-desc">Annual profit gain</div>
+                            </div>
+                            <div class="pbi-kpi-card blue">
+                                <div class="kpi-title">Projected Campaign ROI</div>
+                                <div class="kpi-number" id="sim-roi" style="color: var(--pbi-cyan);">269.4%</div>
+                                <div class="kpi-desc">Net return on budget</div>
+                            </div>
+                        </div>
+                        <div class="bar-chart-container" style="margin-top: 10px;">
+                            <div class="chart-row-meta">
+                                <span>Campaign Budget: <strong id="sim-cost">$312,000</strong></span>
+                                <span>Gross Saved: <strong id="sim-gross">$1,152,600</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 4: DAX EXPLORER -->
+            <div id="page-dax" class="view-content">
+                <div class="dax-card">
+                    <div class="dax-header">
+                        <span class="dax-title">[01] Portfolio Churn Rate %</span>
+                        <span class="pbi-badge">Core KPI</span>
+                    </div>
+                    <pre class="dax-code">Churn Rate % = 
+DIVIDE(
+    CALCULATE(COUNTROWS(Fact_Customer_Churn), Fact_Customer_Churn[Exited] = 1),
+    COUNTROWS(Fact_Customer_Churn),
+    0
+)</pre>
+                </div>
+
+                <div class="dax-card">
+                    <div class="dax-header">
+                        <span class="dax-title">[02] What-If Net Financial Benefit ($)</span>
+                        <span class="pbi-badge">Retention Model</span>
+                    </div>
+                    <pre class="dax-code">Campaign Net Financial Benefit ($) = 
+VAR TargetedCustomers = 
+    CALCULATE(COUNTROWS(Fact_Customer_Churn), Dim_Risk_Tiers[RiskTier] IN {"High Risk", "Medium Risk"})
+VAR CampaignCost = TargetedCustomers * SELECTEDVALUE('Param_Cost'[Cost], 120)
+VAR GrossSaved = 
+    CALCULATE(SUM(Fact_Customer_Churn[ValueAtRisk]), Dim_Risk_Tiers[RiskTier] IN {"High Risk", "Medium Risk"}) * 0.28
+RETURN
+    GrossSaved - CampaignCost</pre>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        function switchPage(pageId, el) {
+            document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            el.classList.add('active');
+        }
+
+        function updateDashboard() {
+            const geo = document.getElementById('slicer-geo').value;
+            const risk = document.getElementById('slicer-risk').value;
+
+            let totalCust = 10000;
+            let churnRate = 22.6;
+            let totalBal = 930.0;
+            let varAmount = 4.12;
+
+            if (geo === 'Germany') {
+                totalCust = 2500;
+                churnRate = 32.4;
+                totalBal = 299.5;
+                varAmount = 1.85;
+            } else if (geo === 'France') {
+                totalCust = 5000;
+                churnRate = 16.1;
+                totalBal = 464.0;
+                varAmount = 1.42;
+            } else if (geo === 'Spain') {
+                totalCust = 2500;
+                churnRate = 16.6;
+                totalBal = 232.5;
+                varAmount = 0.85;
+            }
+
+            if (risk === 'High Risk') {
+                totalCust = Math.round(totalCust * 0.148);
+                churnRate = 78.4;
+                varAmount = 2.82;
+            }
+
+            document.getElementById('kpi-customers').innerText = totalCust.toLocaleString();
+            document.getElementById('kpi-churn-rate').innerText = churnRate.toFixed(1) + '%';
+            document.getElementById('kpi-churn-count').innerText = Math.round(totalCust * (churnRate/100)).toLocaleString() + ' Attrited Accounts';
+            document.getElementById('kpi-balance').innerText = '$' + totalBal.toFixed(1) + 'M';
+            document.getElementById('kpi-var').innerText = '$' + varAmount.toFixed(2) + 'M';
+        }
+
+        function resetFilters() {
+            document.getElementById('slicer-geo').value = 'ALL';
+            document.getElementById('slicer-risk').value = 'ALL';
+            document.getElementById('slicer-gender').value = 'ALL';
+            document.getElementById('slicer-age').value = 'ALL';
+            updateDashboard();
+        }
+
+        function updateSimulator() {
+            const cost = parseInt(document.getElementById('param-cost').value);
+            const saveRate = parseInt(document.getElementById('param-save-rate').value) / 100;
+
+            document.getElementById('cost-val').innerText = '$' + cost;
+            document.getElementById('save-rate-val').innerText = (saveRate * 100).toFixed(0) + '%';
+
+            const targeted = 2600;
+            const totalBudget = targeted * cost;
+            const totalVar = 4116420;
+            const grossSaved = totalVar * saveRate;
+            const netGain = grossSaved - totalBudget;
+            const roi = (netGain / totalBudget) * 100;
+
+            document.getElementById('sim-net-gain').innerText = (netGain >= 0 ? '+$' : '-$') + (Math.abs(netGain)/1000).toFixed(1) + 'K';
+            document.getElementById('sim-roi').innerText = roi.toFixed(1) + '%';
+            document.getElementById('sim-cost').innerText = '$' + totalBudget.toLocaleString();
+            document.getElementById('sim-gross').innerText = '$' + Math.round(grossSaved).toLocaleString();
+        }
+    </script>
+</body>
+</html>

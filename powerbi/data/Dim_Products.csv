@@ -1,0 +1,9 @@
+ProductKey,NumOfProducts,HasCreditCard,HasCreditCardCode,ProductBundleTier
+1,1,No,0,Single Product
+2,1,Yes,1,Single Product
+3,2,No,0,Standard Bundle (2)
+4,2,Yes,1,Standard Bundle (2)
+5,3,No,0,Multi-Product (3+)
+6,3,Yes,1,Multi-Product (3+)
+7,4,No,0,Multi-Product (3+)
+8,4,Yes,1,Multi-Product (3+)

@@ -1,0 +1,234 @@
+/* ==============================================================================
+   POWER BI DAX MEASURE SUITE: BANKING CUSTOMER CHURN & RETENTION INTELLIGENCE
+   Organized by Display Folders for Enterprise Tabular Modeling
+   ============================================================================== */
+
+/* ==============================================================================
+   FOLDER: 01 - Core Portfolio KPIs
+   ============================================================================== */
+
+// Total Customer Accounts in the portfolio
+Total Customers = 
+COUNTROWS(Fact_Customer_Churn)
+
+// Total customers who have churned (Exited = 1)
+Churned Customers = 
+CALCULATE(
+    COUNTROWS(Fact_Customer_Churn),
+    Fact_Customer_Churn[Exited] = 1
+)
+
+// Total customers retained in the active portfolio (Exited = 0)
+Retained Customers = 
+CALCULATE(
+    COUNTROWS(Fact_Customer_Churn),
+    Fact_Customer_Churn[Exited] = 0
+)
+
+// Portfolio Churn Rate Percentage
+Churn Rate % = 
+DIVIDE([Churned Customers], [Total Customers], 0)
+
+// Overall Portfolio Retention Rate Percentage
+Retention Rate % = 
+1 - [Churn Rate %]
+
+// Active Digital/Branch Member Count
+Active Members = 
+CALCULATE(
+    COUNTROWS(Fact_Customer_Churn),
+    Fact_Customer_Churn[IsActiveMember] = 1
+)
+
+// Active Membership Penetration Rate
+Active Member % = 
+DIVIDE([Active Members], [Total Customers], 0)
+
+// Average Customer Age
+Avg Customer Age = 
+AVERAGE(Fact_Customer_Churn[Age])
+
+// Average Relationship Tenure in Years
+Avg Tenure (Years) = 
+AVERAGE(Fact_Customer_Churn[Tenure])
+
+// Average FICO Credit Score
+Avg Credit Score = 
+AVERAGE(Fact_Customer_Churn[CreditScore])
+
+// Average Customer Satisfaction Score (1 to 5)
+Avg Satisfaction Score = 
+AVERAGE(Fact_Customer_Churn[SatisfactionScore])
+
+
+/* ==============================================================================
+   FOLDER: 02 - Financial Exposure & Balances
+   ============================================================================== */
+
+// Total Customer Deposit Balances
+Total Balances ($) = 
+SUM(Fact_Customer_Churn[Balance])
+
+// Average Deposit Balance per Customer
+Avg Balance per Customer = 
+AVERAGE(Fact_Customer_Churn[Balance])
+
+// Total Estimated Customer Salaries
+Total Estimated Salaries ($) = 
+SUM(Fact_Customer_Churn[EstimatedSalary])
+
+// Average Estimated Annual Salary
+Avg Estimated Salary = 
+AVERAGE(Fact_Customer_Churn[EstimatedSalary])
+
+// Total Customer Deposits Held by Churned Customers
+Churned Deposits ($) = 
+CALCULATE(
+    SUM(Fact_Customer_Churn[Balance]),
+    Fact_Customer_Churn[Exited] = 1
+)
+
+// Percentage of Total Deposits Held by Churned Customers
+Churned Deposits Share % = 
+DIVIDE([Churned Deposits ($)], [Total Balances ($)], 0)
+
+// Total Annual Customer Relationship Value (NIM + Fees)
+Total Annual Portfolio Value ($) = 
+SUM(Fact_Customer_Churn[EstimatedAnnualValue])
+
+// Total Annual Expected Revenue at Risk based on Model Churn Probabilities
+Total Annual Value at Risk ($) = 
+SUM(Fact_Customer_Churn[ValueAtRisk])
+
+// Average Predicted Churn Probability across Selected Cohort
+Avg Churn Probability % = 
+AVERAGE(Fact_Customer_Churn[ChurnProbability])
+
+
+/* ==============================================================================
+   FOLDER: 03 - Risk Segmentation & Deep-Dive
+   ============================================================================== */
+
+// High Risk Customer Count (ML Churn Probability >= 65%)
+High Risk Customer Count = 
+CALCULATE(
+    COUNTROWS(Fact_Customer_Churn),
+    Dim_Risk_Tiers[RiskTier] = "High Risk"
+)
+
+// Percentage of Portfolio in High Risk Tier
+High Risk Customer Share % = 
+DIVIDE([High Risk Customer Count], [Total Customers], 0)
+
+// Total Value at Risk from High Risk Segment
+High Risk Value at Risk ($) = 
+CALCULATE(
+    [Total Annual Value at Risk ($)],
+    Dim_Risk_Tiers[RiskTier] = "High Risk"
+)
+
+// Medium Risk Customer Count (ML Churn Probability 35% - 65%)
+Medium Risk Customer Count = 
+CALCULATE(
+    COUNTROWS(Fact_Customer_Churn),
+    Dim_Risk_Tiers[RiskTier] = "Medium Risk"
+)
+
+// Low Risk Customer Count (ML Churn Probability < 35%)
+Low Risk Customer Count = 
+CALCULATE(
+    COUNTROWS(Fact_Customer_Churn),
+    Dim_Risk_Tiers[RiskTier] = "Low Risk"
+)
+
+// Total Customers with Active Complaints
+Complaint Customers Count = 
+CALCULATE(
+    COUNTROWS(Fact_Customer_Churn),
+    Fact_Customer_Churn[Complain] = 1
+)
+
+// Churn Rate among Complaint Filers
+Complaint Churn Rate % = 
+CALCULATE(
+    [Churn Rate %],
+    Fact_Customer_Churn[Complain] = 1
+)
+
+// Churn Rate among Non-Complainants
+Non-Complaint Churn Rate % = 
+CALCULATE(
+    [Churn Rate %],
+    Fact_Customer_Churn[Complain] = 0
+)
+
+// Churn Rate for Customers with 3 or More Products
+Multi-Product Churn Rate % = 
+CALCULATE(
+    [Churn Rate %],
+    Dim_Products[NumOfProducts] >= 3
+)
+
+
+/* ==============================================================================
+   FOLDER: 04 - Retention Campaign What-If Simulation
+   ============================================================================== */
+
+// Total Targeted Customers for Proactive Retention Outreach (High + Medium Risk)
+Campaign Targeted Customers = 
+CALCULATE(
+    COUNTROWS(Fact_Customer_Churn),
+    Dim_Risk_Tiers[RiskTier] IN {"High Risk", "Medium Risk"}
+)
+
+// Total Budget required for the proactive campaign (Default: $120/customer)
+Campaign Total Budget ($) = 
+[Campaign Targeted Customers] * 120.0
+
+// Expected Number of Customers Successfully Retained (Assuming 28% save rate)
+Campaign Retained Customers Count = 
+ROUND(
+    CALCULATE(
+        SUM(Fact_Customer_Churn[ChurnProbability]),
+        Dim_Risk_Tiers[RiskTier] IN {"High Risk", "Medium Risk"}
+    ) * 0.28,
+    0
+)
+
+// Gross Annual Revenue Saved by the Campaign
+Campaign Gross Revenue Saved ($) = 
+CALCULATE(
+    [Total Annual Value at Risk ($)],
+    Dim_Risk_Tiers[RiskTier] IN {"High Risk", "Medium Risk"}
+) * 0.28
+
+// Net Financial Benefit = Gross Saved Revenue - Campaign Cost
+Campaign Net Financial Benefit ($) = 
+[Campaign Gross Revenue Saved ($)] - [Campaign Total Budget ($)]
+
+// Net Return on Investment (ROI) Percentage
+Campaign Net ROI % = 
+DIVIDE([Campaign Net Financial Benefit ($)], [Campaign Total Budget ($)], 0)
+
+
+/* ==============================================================================
+   FOLDER: 05 - Conditional Formatting & UI Helpers
+   ============================================================================== */
+
+// Dynamic Hex Color code based on Churn Rate benchmark (Threshold: 20%)
+Churn Rate Status Color = 
+IF(
+    [Churn Rate %] > 0.25,
+    "#EF4444", // Red (High Risk)
+    IF(
+        [Churn Rate %] > 0.18,
+        "#F59E0B", // Amber (Moderate Risk)
+        "#10B981"  // Emerald (Healthy)
+    )
+)
+
+// Dynamic Title Card Helper
+Dynamic Portfolio Subtitle = 
+"Audited Accounts: " & FORMAT([Total Customers], "#,##0") & 
+" | Total Balances: $" & FORMAT([Total Balances ($)] / 1000000, "#,##0.0") & "M" &
+" | Baseline Attrition: " & FORMAT([Churn Rate %], "0.0%")

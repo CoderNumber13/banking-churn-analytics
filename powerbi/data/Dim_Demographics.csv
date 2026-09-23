@@ -1,0 +1,41 @@
+DemographicKey,Gender,AgeGroup,GenerationalCohort,CreditScoreTier,AgeGroupSort
+1,Male,Under30,Gen Z / Young Adult,Poor,1
+2,Male,Under30,Gen Z / Young Adult,Fair,1
+3,Male,Under30,Gen Z / Young Adult,Good,1
+4,Male,Under30,Gen Z / Young Adult,VeryGood,1
+5,Male,Under30,Gen Z / Young Adult,Exceptional,1
+6,Male,Age30_45,Millennial / Prime,Poor,2
+7,Male,Age30_45,Millennial / Prime,Fair,2
+8,Male,Age30_45,Millennial / Prime,Good,2
+9,Male,Age30_45,Millennial / Prime,VeryGood,2
+10,Male,Age30_45,Millennial / Prime,Exceptional,2
+11,Male,Age46_60,Gen X / Peak Wealth,Poor,3
+12,Male,Age46_60,Gen X / Peak Wealth,Fair,3
+13,Male,Age46_60,Gen X / Peak Wealth,Good,3
+14,Male,Age46_60,Gen X / Peak Wealth,VeryGood,3
+15,Male,Age46_60,Gen X / Peak Wealth,Exceptional,3
+16,Male,Over60,Boomer / Senior,Poor,4
+17,Male,Over60,Boomer / Senior,Fair,4
+18,Male,Over60,Boomer / Senior,Good,4
+19,Male,Over60,Boomer / Senior,VeryGood,4
+20,Male,Over60,Boomer / Senior,Exceptional,4
+21,Female,Under30,Gen Z / Young Adult,Poor,1
+22,Female,Under30,Gen Z / Young Adult,Fair,1
+23,Female,Under30,Gen Z / Young Adult,Good,1
+24,Female,Under30,Gen Z / Young Adult,VeryGood,1
+25,Female,Under30,Gen Z / Young Adult,Exceptional,1
+26,Female,Age30_45,Millennial / Prime,Poor,2
+27,Female,Age30_45,Millennial / Prime,Fair,2
+28,Female,Age30_45,Millennial / Prime,Good,2
+29,Female,Age30_45,Millennial / Prime,VeryGood,2
+30,Female,Age30_45,Millennial / Prime,Exceptional,2
+31,Female,Age46_60,Gen X / Peak Wealth,Poor,3
+32,Female,Age46_60,Gen X / Peak Wealth,Fair,3
+33,Female,Age46_60,Gen X / Peak Wealth,Good,3
+34,Female,Age46_60,Gen X / Peak Wealth,VeryGood,3
+35,Female,Age46_60,Gen X / Peak Wealth,Exceptional,3
+36,Female,Over60,Boomer / Senior,Poor,4
+37,Female,Over60,Boomer / Senior,Fair,4
+38,Female,Over60,Boomer / Senior,Good,4
+39,Female,Over60,Boomer / Senior,VeryGood,4
+40,Female,Over60,Boomer / Senior,Exceptional,4
