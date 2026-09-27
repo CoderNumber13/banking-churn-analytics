@@ -1,5 +1,5 @@
 """
-Automated Jupyter Notebook Builder for Banking Customer Churn Project
+Banking Customer Churn Project
 """
 
 import os
